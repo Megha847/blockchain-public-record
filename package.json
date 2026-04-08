@@ -1,0 +1,15 @@
+{
+  "name": "blockchain-birthcert",
+  "version": "1.0.0",
+  "description": "Blockchain + ZKP Demo",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "express": "^4.18.2",
+    "multer": "latest",
+    "fs": "^0.0.1-security"
+  }
+}
