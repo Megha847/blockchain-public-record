@@ -1,0 +1,17 @@
+{
+  "inputs": [
+    {
+      "name": "age",
+      "public": false,
+      "type": "u32"
+    },
+    {
+      "name": "threshold",
+      "public": true,
+      "type": "u32"
+    }
+  ],
+  "output": {
+    "type": "u32"
+  }
+}

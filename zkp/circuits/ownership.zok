@@ -1,0 +1,6 @@
+// Ownership: prove knowledge of owner_secret with record_commitment = s^3 + s (binding without revealing s).
+def main(private field owner_secret, field record_commitment) -> field {
+    field c = owner_secret * owner_secret * owner_secret + owner_secret;
+    assert(c == record_commitment);
+    return 1;
+}

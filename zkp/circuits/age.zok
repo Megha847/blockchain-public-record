@@ -1,0 +1,6 @@
+// Age gate: prover demonstrates knowledge of age >= threshold without revealing age.
+// Public: threshold. Private: age. Public output: 1 when constraint holds.
+def main(private u32 age, u32 threshold) -> u32 {
+    assert(age >= threshold);
+    return 1;
+}

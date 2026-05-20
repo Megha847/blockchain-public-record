@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: Public Records API
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+  /api/auth/register:
+    post:
+      summary: Register user
+  /api/auth/login:
+    post:
+      summary: Login and receive JWT
+  /api/records/upload:
+    post:
+      summary: Upload record to IPFS and blockchain
+  /api/performance/run:
+    post:
+      summary: Trigger load test experiment
+  /api/performance/metrics:
+    get:
+      summary: Query metrics

@@ -1,0 +1,9 @@
+.env
+node_modules/
+*/node_modules/
+dist/
+*/dist/
+contracts/artifacts/
+contracts/cache/
+tmpzk/
+.DS_Store

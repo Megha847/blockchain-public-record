@@ -1,0 +1,7 @@
+// Data integrity: prove knowledge of secret such that commitment = secret^2 (toy commitment).
+// In production, swap for SHA256/Poseidon gadgets from ZoKrates stdlib.
+def main(private field secret, field commitment) -> field {
+    field c = secret * secret;
+    assert(c == commitment);
+    return 1;
+}

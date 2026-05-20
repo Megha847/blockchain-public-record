@@ -1,0 +1,17 @@
+{
+  "inputs": [
+    {
+      "name": "owner_secret",
+      "public": false,
+      "type": "field"
+    },
+    {
+      "name": "record_commitment",
+      "public": true,
+      "type": "field"
+    }
+  ],
+  "output": {
+    "type": "field"
+  }
+}

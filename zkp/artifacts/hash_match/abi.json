@@ -1,0 +1,17 @@
+{
+  "inputs": [
+    {
+      "name": "secret",
+      "public": false,
+      "type": "field"
+    },
+    {
+      "name": "commitment",
+      "public": true,
+      "type": "field"
+    }
+  ],
+  "output": {
+    "type": "field"
+  }
+}

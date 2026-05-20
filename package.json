@@ -1,0 +1,25 @@
+{
+  "name": "public-records-zkp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scalable and Secure Public Records System using Blockchain and Zero-Knowledge Proofs",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "zkp:build": "node scripts/build-zkp.mjs",
+    "contracts:compile": "cd contracts && npx hardhat compile",
+    "contracts:deploy": "cd contracts && npx hardhat run scripts/deploy.js --network ganache",
+    "seed": "node server/scripts/seed.js",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "postinstall": "node -e \"try{require('fs').mkdirSync('contracts/verifiers',{recursive:true})}catch(e){}\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "zokrates-js": "^1.1.9"
+  },
+  "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
+}
