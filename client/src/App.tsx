@@ -296,6 +296,16 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !String(error.config?.url || "").includes("/api/auth/login")) {
+      localStorage.removeItem("token");
+      window.dispatchEvent(new Event("auth:expired"));
+    }
+    return Promise.reject(error);
+  }
+);
 function getApiErrorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as any;
@@ -778,6 +788,15 @@ function Admin() {
 export default function App() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
   const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  useEffect(() => {
+    const onExpired = () => {
+      setToken(null);
+      toast.error("Session expired. Please log in again.");
+    };
+    window.addEventListener("auth:expired", onExpired);
+    return () => window.removeEventListener("auth:expired", onExpired);
+  }, []);
 
   const onLogin = (t: string) => {
     localStorage.setItem("token", t);

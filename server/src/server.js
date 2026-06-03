@@ -99,14 +99,19 @@ const normalizeFileHash = (value) => String(value || "").trim().toLowerCase();
 const publicRecordsArtifactPath = path.join(__dirname, "../../contracts/artifacts/contracts/PublicRecords.sol/PublicRecords.json");
 const minSignerBalance = ethers.parseEther("0.01");
 
-async function selectChainSigner(provider) {
-  if (process.env.DEPLOYER_PRIVATE_KEY) {
-    const wallet = new ethers.Wallet(process.env.DEPLOYER_PRIVATE_KEY, provider);
-    const balance = await provider.getBalance(wallet.address);
-    if (balance >= minSignerBalance) return wallet;
-    console.warn(`[initChain] DEPLOYER_PRIVATE_KEY account ${wallet.address} has insufficient funds; using funded Ganache signer`);
-  }
+async function getSignerAddress(value = signer) {
+  if (!value) return null;
+  return value.address || await value.getAddress();
+}
 
+function resetChainConnection() {
+  contract = null;
+  signer = null;
+  chainProvider = null;
+  chainRpc = null;
+}
+
+async function selectChainSigner(provider) {
   const accounts = await provider.listAccounts();
   for (let index = 0; index < accounts.length; index += 1) {
     const candidate = await provider.getSigner(index);
@@ -118,6 +123,20 @@ async function selectChainSigner(provider) {
   throw new Error("no funded Ganache signer available");
 }
 
+async function refreshChainSigner(provider) {
+  loadEnvironment();
+  const selected = await selectChainSigner(provider);
+  const selectedAddress = await getSignerAddress(selected);
+  const currentAddress = await getSignerAddress();
+
+  if (!currentAddress || currentAddress.toLowerCase() !== selectedAddress.toLowerCase()) {
+    signer = selected;
+    if (contract) contract = contract.connect(signer);
+  }
+
+  return signer;
+}
+
 async function initIpfs() {
   const mod = await import("ipfs-http-client");
   ipfs = mod.create({ url: process.env.IPFS_API || "http://127.0.0.1:5001/api/v0" });
@@ -127,7 +146,7 @@ async function initChain() {
   const rpc = process.env.GANACHE_RPC || "http://127.0.0.1:7545";
   chainProvider = new ethers.JsonRpcProvider(rpc);
   chainRpc = rpc;
-  signer = await selectChainSigner(chainProvider);
+  signer = await refreshChainSigner(chainProvider);
   if (!process.env.PUBLIC_RECORDS_ADDRESS) {
     console.warn("[initChain] PUBLIC_RECORDS_ADDRESS is missing; on-chain verification is disabled");
     return;
@@ -156,7 +175,8 @@ async function initChain() {
 
 async function anchorRecordOnChain(fileHash, cid) {
   if (!contract || !signer) return "";
-  const owner = signer.address || await signer.getAddress();
+  await refreshChainSigner(chainProvider);
+  const owner = await getSignerAddress();
   const tx = await contract.addRecord(fileHash, cid, owner);
   const receipt = await tx.wait();
   return receipt.hash;
@@ -167,10 +187,7 @@ async function ensureChainReady() {
 
   const rpc = process.env.GANACHE_RPC || "http://127.0.0.1:7545";
   if (chainRpc && chainRpc !== rpc) {
-    contract = null;
-    signer = null;
-    chainProvider = null;
-    chainRpc = null;
+    resetChainConnection();
   }
 
   if (!process.env.PUBLIC_RECORDS_ADDRESS) {
@@ -186,6 +203,12 @@ async function ensureChainReady() {
 
   if (!contract || !chainProvider) {
     await initChain().catch((e) => console.warn("[ensureChainReady]", e?.message || e));
+  } else {
+    await refreshChainSigner(chainProvider).catch((e) => {
+      console.warn("[ensureChainReady]", e?.message || e);
+      contract = null;
+      signer = null;
+    });
   }
 
   if (!contract || !chainProvider) {
@@ -233,7 +256,8 @@ app.get("/api/system/status", auth(), async (_, res) => {
 
   if (chainProvider && signer) {
     try {
-      signerAddress = signer.address || await signer.getAddress();
+      await refreshChainSigner(chainProvider);
+      signerAddress = await getSignerAddress();
       signerBalance = ethers.formatEther(await chainProvider.getBalance(signerAddress));
     } catch {
       signerAddress = null;
